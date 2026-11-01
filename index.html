@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>근육 회복 시뮬레이터 | 의료 교육 대시보드</title>
+<style>
+:root{--bg:#f3f6fb;--panel:#fff;--ink:#17243a;--muted:#65748b;--line:#e4eaf2;--blue:#2867d8;--teal:#0d9b91;--orange:#e58a35;--red:#d95757;--purple:#8761c8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"Noto Sans KR",system-ui,sans-serif}
+header{padding:22px clamp(16px,4vw,48px);background:#10233f;color:white}
+.kicker{font-size:11px;letter-spacing:.16em;color:#a9c7f8;font-weight:800}.headrow{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}h1{font-size:clamp(22px,3vw,32px);margin:7px 0}.sub{color:#c4d1e3;font-size:13px}
+main{max-width:1440px;margin:auto;padding:22px clamp(12px,3vw,36px) 50px}
+.scenarios{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.scenario{border:1px solid #cdd8e7;background:#fff;color:#30435d;padding:11px 15px;border-radius:12px;font-weight:750;cursor:pointer}.scenario.active{background:var(--blue);color:white;border-color:var(--blue)}
+.layout{display:grid;grid-template-columns:245px minmax(0,1fr);gap:18px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:17px;box-shadow:0 5px 18px #17243a08}
+.methods{padding:16px;position:sticky;top:12px}.panel h2{font-size:16px;margin:0 0 12px}.hint{font-size:12px;color:var(--muted);line-height:1.55}
+.method{width:100%;display:flex;align-items:center;gap:10px;text-align:left;border:1px solid transparent;background:#f7f9fc;padding:12px;border-radius:12px;margin:8px 0;cursor:pointer;color:var(--ink)}
+.method.active{background:#edf4ff;border-color:#9ebcf0}.dot{width:10px;height:10px;border-radius:50%;flex:none}.method strong{display:block;font-size:13px}.method small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.content{display:grid;gap:18px;min-width:0}.topgrid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.visual,.details,.chartpanel,.compare{padding:18px}
+.tag{font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--blue);text-transform:uppercase}.visual h2,.details h2{margin:5px 0 4px}
+.muscle-wrap{background:linear-gradient(135deg,#f7f9fd,#edf3fb);border-radius:14px;padding:8px;margin-top:12px}
+svg{width:100%;height:auto;display:block}.fiber{stroke:#c85e67;stroke-width:13;stroke-linecap:round;fill:none}.fiber2{stroke:#e58b91;stroke-width:5;stroke-linecap:round;fill:none}.damage{stroke:#7e3445;stroke-width:3;stroke-linecap:round;stroke-dasharray:5 5}.cell{fill:#ef9a9e;stroke:#bd5c67;stroke-width:2}.immune{fill:#f3b34e;stroke:#bd7a24;stroke-width:1.5}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin:8px 2px}.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.phase{display:flex;gap:5px;margin-top:12px}.phase span{flex:1;text-align:center;background:#eef2f7;border-radius:8px;padding:8px 3px;font-size:10px;color:#66758a}.phase span.on{background:#dceaff;color:#1c58b7;font-weight:800}
+.explain{font-size:13px;line-height:1.65;color:#43536a;margin:12px 0 0}.details .mechanism{background:#f5f8fc;border-radius:12px;padding:12px;font-size:13px;line-height:1.6;margin:10px 0}.caution{border-left:3px solid var(--orange);padding:9px 11px;background:#fff8ef;color:#80531f;font-size:12px;line-height:1.6;border-radius:0 9px 9px 0}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}.metric{background:#f7f9fc;border:1px solid var(--line);padding:11px;border-radius:11px}.metric label{display:block;font-size:10px;color:var(--muted)}.metric b{font-size:19px}.metric small{font-size:10px;color:var(--muted);display:block}
+.chartpanel{min-width:0}.charthead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.charthead select{border:1px solid var(--line);border-radius:8px;padding:7px;background:white;color:var(--ink)}
+.chartbox{height:260px;margin-top:12px;position:relative}canvas{width:100%;height:100%}.chartnote{font-size:11px;color:var(--muted);line-height:1.5}
+.compare{overflow:hidden}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:650px;font-size:12px}th,td{text-align:left;border-bottom:1px solid var(--line);padding:11px 9px}th{color:var(--muted);font-size:11px;background:#f8fafc}td:first-child{font-weight:750}
+.disclaimer{margin-top:18px;background:#fff4ed;border:1px solid #f1d2c0;border-radius:13px;padding:14px;font-size:12px;line-height:1.65;color:#75482f}
+.sources{padding:18px}.sources li{margin:9px 0;font-size:12px;line-height:1.5;color:#46566d}.sources a{color:#245fbd}
+footer{text-align:center;color:#8995a6;font-size:10px;padding:22px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.methods{position:static}.methodlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.topgrid{grid-template-columns:1fr}}
+@media(max-width:520px){main{padding:14px 10px 32px}.visual,.details,.chartpanel,.compare{padding:14px}.methodlist{grid-template-columns:1fr 1fr}.method{padding:9px}.metrics{grid-template-columns:repeat(2,1fr)}.chartbox{height:220px}}
+</style>
+</head>
+<body>
+<header><div class="headrow"><div><div class="kicker">MUSCLE RECOVERY LAB · EDUCATIONAL SIMULATOR</div><h1>근육 회복 과정 인터랙티브 시뮬레이터</h1><div class="sub">손상 유형과 물리치료 접근법에 따른 생리적 반응을 개념적으로 탐색합니다.</div></div><div class="sub">교육용 모델 · 실제 처방 도구 아님</div></div></header>
+<main>
+<div class="scenarios" role="group" aria-label="손상 상황 선택">
+<button class="scenario active" data-scenario="surgery">상황 1 · 근육 파열 후 봉합 수술</button>
+<button class="scenario" data-scenario="doms">상황 2 · 운동 후 DOMS / 미세 손상</button>
+</div>
+<div class="layout">
+<aside class="panel methods"><h2>물리치료 방법</h2><p class="hint">방법을 선택하면 작용 원리와 개념적 반응을 확인할 수 있습니다.</p>
+<div class="methodlist" id="methodList"></div>
+<p class="hint">※ 수술 후에는 아래 방법을 임의로 적용하지 말고 담당 의료진의 지침을 우선하세요.</p></aside>
+<section class="content">
+<div class="topgrid">
+<div class="panel visual">
+<div class="tag">01 · TISSUE VIEW</div><h2 id="visualTitle">봉합된 근육 조직</h2><p class="hint" id="visualSub">큰 구조적 손상과 봉합 부위를 개념적으로 표시</p>
+<div class="muscle-wrap"><svg viewBox="0 0 520 230" role="img" aria-label="근육 섬유의 손상 및 회복 개념도">
+<defs><linearGradient id="muscleFill" x1="0" x2="1"><stop offset="0" stop-color="#f7b2b4"/><stop offset="1" stop-color="#e98791"/></linearGradient></defs>
+<path d="M35 35 Q260 5 485 35 L485 195 Q260 225 35 195Z" fill="#f9d9da" stroke="#e6a2a7" stroke-width="2"/>
+<g id="fibers"><path class="fiber" d="M65 62 C180 48 330 48 455 62"/><path class="fiber2" d="M65 87 C180 73 330 73 455 87"/><path class="fiber" d="M65 112 C180 98 330 98 455 112"/><path class="fiber2" d="M65 137 C180 123 330 123 455 137"/><path class="fiber" d="M65 162 C180 148 330 148 455 162"/></g>
+<g id="injuryMark"><path class="damage" d="M255 48 l-10 22 15 13 -14 22 15 13 -14 22 15 18"/><path class="damage" d="M278 48 l-12 22 15 13 -12 22 15 13 -12 22 15 18"/></g>
+<g id="immuneCells"><circle class="immune" cx="215" cy="78" r="8"/><circle class="immune" cx="305" cy="145" r="7"/><circle class="immune" cx="330" cy="80" r="6"/></g>
+<g id="stitches"><path d="M245 54 Q260 40 275 54 M245 86 Q260 72 275 86 M245 118 Q260 104 275 118 M245 150 Q260 136 275 150" fill="none" stroke="#2468bd" stroke-width="3"/><path d="M260 48 V156" stroke="#2468bd" stroke-width="2" stroke-dasharray="3 4"/></g>
+<g id="repairFibers" opacity="0"><path d="M245 62 Q260 55 275 62 M245 87 Q260 80 275 87 M245 112 Q260 105 275 112 M245 137 Q260 130 275 137" stroke="#168e83" stroke-width="6" fill="none" stroke-linecap="round"/></g>
+<text x="260" y="216" text-anchor="middle" fill="#65748b" font-size="11">개념도 · 실제 조직 사진이나 진단 영상이 아닙니다</text>
+</svg></div>
+<div class="legend"><span><i style="background:#d87983"></i>근육 섬유</span><span><i style="background:#f3b34e"></i>염증 관련 세포</span><span><i style="background:#2867d8"></i>봉합 부위</span><span><i style="background:#168e83"></i>재형성 섬유</span></div>
+<div class="phase" id="phase"><span>손상</span><span>염증</span><span>재생</span><span>재형성</span></div>
+<p class="explain" id="tissueText"></p>
+</div>
+<div class="panel details">
+<div class="tag">02 · SELECTED MODALITY</div><h2 id="treatmentTitle">냉찜질</h2><p class="hint" id="treatmentTag">통증 신호 및 국소 온도에 영향을 주는 보조적 접근</p>
+<div class="mechanism" id="mechanism"></div>
+<div class="caution" id="caution"></div>
+<div class="metrics" id="metrics"></div>
+</div>
+</div>
+<div class="panel chartpanel">
+<div class="charthead"><div><div class="tag">03 · MODELLED TREND</div><h2 style="margin:5px 0">시간에 따른 회복 지표</h2></div><select id="chartMetric" aria-label="그래프 지표 선택"><option value="pain">통증 수준</option><option value="inflammation">염증 반응</option><option value="tissue">조직 회복도</option><option value="strength">근력 회복도</option></select></div>
+<div class="chartbox"><canvas id="trend" aria-label="시간에 따른 선택 지표 그래프"></canvas></div>
+<p class="chartnote">그래프의 0~100 값과 곡선은 치료법 간 개념적 차이를 보여주기 위한 <b>가상 시뮬레이션 값</b>입니다. 임상시험 원자료, 개인 예측치 또는 치료 효과의 크기가 아닙니다. 낮은 통증 점수가 곧 조직 재생을 뜻하지 않습니다.</p>
+</div>
+<div class="panel compare"><div class="tag">04 · COMPARISON</div><h2 style="margin:5px 0 12px">5가지 방법 비교</h2><div class="tablewrap"><table><thead><tr><th>방법</th><th>주요 작용</th><th>통증</th><th>염증</th><th>조직 재생</th><th>근력 회복</th></tr></thead><tbody id="comparison"></tbody></table></div><p class="hint">표의 평가는 해당 상황에서의 근거 수준을 요약한 정성적 설명이며, 직접 비교한 동일 임상시험의 순위가 아닙니다.</p></div>
+<div class="disclaimer" id="safetyNotice"></div>
+<div class="panel sources"><div class="tag">05 · EVIDENCE & REFERENCES</div><h2 style="margin:5px 0">근거와 해석의 한계</h2><ul>
+<li>DOMS 물리치료 중재의 체계적 문헌고찰(2021): 121개 연구를 포함했으나 전반적으로 근거의 질이 낮고 연구 간 이질성이 큼. <a href="https://pubmed.ncbi.nlm.nih.gov/34365084/" target="_blank" rel="noopener">PubMed</a></li>
+<li>DOMS 회복기법 메타분석(2018): 마사지·냉각 등에서 통증 감소 신호가 보고됐지만 통증·피로·생화학 지표는 서로 다른 결과임. <a href="https://pubmed.ncbi.nlm.nih.gov/29755363/" target="_blank" rel="noopener">PubMed</a></li>
+<li>전기자극과 DOMS 체계적 문헌고찰(2022): 전기자극이 DOMS나 근육 회복을 개선한다는 근거는 매우 낮거나 낮은 수준. <a href="https://pubmed.ncbi.nlm.nih.gov/35964921/" target="_blank" rel="noopener">PubMed</a></li>
+<li>열·냉 치료 메타분석(2021): DOMS 통증 완화 가능성을 보고했으나 고품질 연구가 더 필요함. <a href="https://pubmed.ncbi.nlm.nih.gov/33493991/" target="_blank" rel="noopener">PubMed</a></li>
+<li>광생체조절 치료 메타분석(2025): 일부 DOMS 통증·근력 결과에서 긍정적 신호가 있었지만 포함 연구 수와 결과의 한계가 있음. 일반 적외선 온열치료와 동일한 치료가 아님. <a href="https://pubmed.ncbi.nlm.nih.gov/40700213/" target="_blank" rel="noopener">PubMed</a></li>
+</ul><p class="hint">이 자료는 교육용 요약입니다. 연구 대상은 주로 건강한 성인의 운동 유발 근육통이며, 봉합 수술 후 근육의 안전성·효과로 그대로 일반화할 수 없습니다. 특히 적외선은 일반 적외선 온열과 특정 파장·용량을 쓰는 광생체조절(PBMT)을 구분해야 합니다.</p></div>
+</section></div>
+<footer>Educational use only · 이 시뮬레이터는 진단·처방·재활 계획을 대신하지 않습니다.</footer>
+</main>
+<script>
+const methods=[
+{id:'heat',name:'온찜질',sub:'표면 온열 · 혈류/감각 변화',color:'#e58a35',mechanism:'피부와 표층 조직을 따뜻하게 해 편안함과 일시적 통증 완화를 도울 수 있습니다. 혈관 확장과 감각 입력 변화가 주요 설명 기전입니다.',limit:'급성 수술 부위·출혈·열감·감각 저하가 있는 부위에는 의료진 허가 없이 적용하지 않습니다. 따뜻함이 근육 봉합부를 더 빨리 재생시킨다는 근거는 확립되지 않았습니다.',doms:'DOMS 통증 완화에 일부 긍정적 연구가 있지만 연구 간 차이가 큽니다.',surg:'봉합부에 대한 적용 시점과 허용 여부는 수술 종류·상처 상태에 따라 의료진이 결정합니다.',ratings:['가능성 있음','불확실','입증 안 됨','입증 안 됨'],effect:{pain:14,inflammation:0,tissue:0,strength:0}},
+{id:'cold',name:'냉찜질',sub:'냉각 · 감각/통증 조절',color:'#3688dc',mechanism:'피부 온도를 낮추고 말초 신경의 감각 전달과 국소 혈류를 일시적으로 줄여 통증을 둔화시킬 수 있습니다. 통증 조절과 조직 재생은 별개의 결과입니다.',limit:'피부에 직접 얼음을 대지 말고, 감각·순환 문제가 있거나 수술 부위라면 먼저 의료진에게 확인합니다. 반복적 장시간 냉각이 재생을 촉진한다고 단정할 수 없습니다.',doms:'운동 직후 단기 통증 완화 신호가 있으나 24시간 이후 효과는 일관되지 않습니다.',surg:'수술 직후 부종·통증 관리에 쓰이는 경우도 있지만, 적용 위치·시간·시점은 수술팀 지침을 따라야 합니다.',ratings:['가능성 있음','일시적 조절','입증 안 됨','입증 안 됨'],effect:{pain:20,inflammation:8,tissue:0,strength:0}},
+{id:'infrared',name:'적외선 치료',sub:'복사열 · 표층 온열',color:'#d96c45',mechanism:'일반 적외선 치료는 피부와 표층 조직을 가열해 온열감을 제공하는 방식입니다. 특정 파장과 조사량을 쓰는 광생체조절(PBMT)은 별도 중재이며, 일반 적외선 온열과 같은 것으로 취급하면 안 됩니다.',limit:'DOMS에서 광치료 연구 결과가 일부 긍정적이어도 일반 적외선 온열치료의 효과를 증명하는 것은 아닙니다. 화상 위험과 수술 부위 적용 여부를 확인해야 합니다.',doms:'광치료/PBMT 연구에서 일부 통증·근력 지표 개선이 보고됐으나 기기·파장·용량이 다양합니다.',surg:'봉합부에 대한 효과와 안전성을 뒷받침하는 직접 근거가 제한적입니다. 의료진 승인 없이 사용하지 않습니다.',ratings:['제한적 가능성','불확실','입증 안 됨','제한적/불확실'],effect:{pain:12,inflammation:3,tissue:2,strength:2}},
+{id:'tens',name:'TENS',sub:'경피적 전기신경 자극',color:'#8761c8',mechanism:'피부 전극을 통해 감각신경을 자극해 통증 신호 처리에 영향을 줄 수 있습니다. 일반적인 TENS는 통증 조절 목적이며 근육 섬유를 직접 이어 붙이거나 재생시키는 치료가 아닙니다.',limit:'DOMS에 대한 전기자극 연구는 효과를 뒷받침하지 못하거나 근거 확실성이 낮습니다. 심박조율기 등 삽입 기기, 감각 저하, 상처 부위 등은 전문가 확인이 필요합니다.',doms:'체계적 문헌고찰에서 DOMS 예방·치료 및 회복 개선 근거가 매우 낮거나 낮은 수준입니다.',surg:'전극을 수술 부위·상처 주변에 놓아도 되는지는 반드시 수술팀이 판단해야 합니다.',ratings:['통증 조절 가능','불확실','입증 안 됨','입증 안 됨'],effect:{pain:17,inflammation:0,tissue:0,strength:0}},
+{id:'massage',name:'마사지 치료',sub:'기계적 자극 · 감각/이완',color:'#0d9b91',mechanism:'피부·근막·근육에 기계적 자극을 주어 편안함과 통증 인식에 영향을 줄 수 있습니다. 일부 DOMS 연구에서 통증 감소가 관찰됐지만, 통증이 줄었다고 손상 섬유가 복구됐다는 뜻은 아닙니다.',limit:'강한 압박이나 깊은 마사지는 손상·멍·급성 염증·수술 봉합부에 해가 될 수 있습니다. 수술 후에는 의료진 허가 전 봉합 부위 마사지를 피해야 합니다.',doms:'여러 메타분석에서 DOMS 통증 감소 가능성이 보고됐지만 효과 크기와 연구 질에는 한계가 있습니다.',surg:'봉합부 직접 마사지 금지 여부와 시작 시점은 수술팀의 재활 지침을 따릅니다.',ratings:['비교적 근거 있음','제한적/불확실','입증 안 됨','불확실'],effect:{pain:24,inflammation:5,tissue:1,strength:1}}
+];
+let scenario='surgery', selected='cold', metric='pain';
+const $=id=>document.getElementById(id);
+function renderMethods(){ $('methodList').innerHTML=methods.map(m=>`<button class="method ${m.id===selected?'active':''}" data-id="${m.id}"><i class="dot" style="background:${m.color}"></i><span><strong>${m.name}</strong><small>${m.sub}</small></span></button>`).join('');document.querySelectorAll('.method').forEach(b=>b.onclick=()=>{selected=b.dataset.id;update()})}
+function update(){
+ const m=methods.find(x=>x.id===selected), s=scenario==='surgery';
+ $('visualTitle').textContent=s?'봉합된 근육 조직':'운동 유발 미세 손상';
+ $('visualSub').textContent=s?'근육 섬유의 큰 단절과 봉합 부위를 개념적으로 표시':'미세한 섬유 손상과 일시적인 염증 반응을 개념적으로 표시';
+ $('injuryMark').style.opacity=s?1:.48;$('stitches').style.opacity=s?1:0;$('immuneCells').style.opacity=s?'.65':1;$('repairFibers').style.opacity=s?'.25':'.75';
+ $('tissueText').textContent=s?'수술 상황은 근육의 구조적 단절을 봉합한 상태를 가정합니다. 초기에는 봉합부 보호가 중요하며 염증·재생·재형성은 수주 이상 이어질 수 있습니다. 실제 경과는 파열 위치와 정도, 수술법, 개인 상태에 따라 달라집니다.':'DOMS는 낯설거나 강한 운동, 특히 근육이 늘어나며 힘을 내는 동작 뒤 1~3일 사이 통증이 두드러질 수 있습니다. 대개 자연 회복되며, 수술로 봉합한 큰 파열과는 손상 규모와 관리 목표가 다릅니다.';
+ $('phase').innerHTML=(s?['손상/봉합','초기 염증','재생','재형성']:['미세 손상','일시적 염증','회복 진행','기능 회복']).map((x,i)=>`<span class="${i===(s?1:1)?'on':''}">${x}</span>`).join('');
+ $('treatmentTitle').textContent=m.name;$('treatmentTag').textContent=m.sub;$('mechanism').textContent=m.mechanism;$('caution').textContent=(s?m.surg:m.doms)+' '+m.limit;
+ const vals=s?[{v:'불확실',l:'통증 변화'},{v:'불확실',l:'염증 반응'},{v:'의료진 주도',l:'조직 회복'},{v:'단계적',l:'근력 회복'}]:[{v:m.ratings[0],l:'통증 변화'},{v:m.ratings[1],l:'염증 반응'},{v:m.ratings[2],l:'조직 회복'},{v:m.ratings[3],l:'근력 회복'}];
+ $('metrics').innerHTML=vals.map(o=>`<div class="metric"><label>${o.l}</label><b style="font-size:${o.v.length>6?13:17}px">${o.v}</b><small>${s?'직접 적용 효과 미확립':'근거 수준 요약'}</small></div>`).join('');
+ $('safetyNotice').innerHTML=s?'<b>수술 후 안전 안내:</b> 이 화면은 재활 프로토콜이 아닙니다. 봉합된 근육은 재파열 위험과 수술법별 제한이 있으므로 온열·냉각·적외선·TENS·마사지의 적용 여부, 시점, 강도는 담당 외과의·물리치료사의 지시를 따라야 합니다. 갑작스러운 통증 악화, 급격한 부종, 발열, 상처 이상 등은 보호자와 의료진에게 즉시 알리세요.':'<b>DOMS 안전 안내:</b> 가벼운 근육통과 일시적인 기능 저하는 흔할 수 있지만, 심한 통증·뚜렷한 부종·현저한 근력 저하·소변 색 변화 또는 일상 동작이 어려운 증상이 있으면 단순 DOMS로 단정하지 말고 보호자와 의료진에게 상담하세요.';
+ $('comparison').innerHTML=methods.map(x=>`<tr><td>${x.name}</td><td>${x.sub}</td><td>${scenario==='surgery'?'개별 평가 필요':x.ratings[0]}</td><td>${scenario==='surgery'?'불확실':x.ratings[1]}</td><td>${scenario==='surgery'?'직접 근거 부족':x.ratings[2]}</td><td>${scenario==='surgery'?'재활 단계 의존':x.ratings[3]}</td></tr>`).join('');
+ renderMethods();drawChart();
+}
+function seriesFor(met){
+ const days=[0,1,2,3,5,7,10,14,21,28];
+ const base=scenario==='surgery'?{pain:[82,78,70,62,52,42,30,20,12,7],inflammation:[75,82,72,60,45,32,20,12,6,3],tissue:[5,8,13,20,32,43,58,70,84,92],strength:[8,8,10,14,20,29,42,58,75,88]}:{pain:[12,55,82,70,48,28,14,7,4,2],inflammation:[8,40,70,58,35,18,9,4,2,1],tissue:[88,78,72,76,84,91,96,98,99,100],strength:[95,60,48,58,72,84,93,97,99,100]}};
+ let data=base[met].slice();const e=methods.find(x=>x.id===selected).effect;
+ // Illustrative offsets only: deliberately small and never presented as measured treatment effects.
+ if(met==='pain')data=data.map((v,i)=>Math.max(0,v-(e.pain*(1-Math.exp(-i/2.5)))*(scenario==='surgery'?.18:1)));
+ if(met==='inflammation')data=data.map((v,i)=>Math.max(0,v-(e.inflammation*(1-Math.exp(-i/3)))*(scenario==='surgery'?.08:1)));
+ if(met==='tissue'||met==='strength')data=data.map((v,i)=>Math.min(100,v+(e[met]*(1-Math.exp(-i/4)))*(scenario==='surgery'?.08:.08)));
+ return {days,data};
+}
+function drawChart(){
+ const c=$('trend'),r=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1;c.width=r.width*dpr;c.height=r.height*dpr;
+ const ctx=c.getContext('2d');ctx.scale(dpr,dpr);const w=r.width,h=r.height,p={l:38,r:15,t:15,b:32};
+ const labels={pain:'통증 (높을수록 심함)',inflammation:'염증 반응 (개념 지수)',tissue:'조직 회복도 (개념 지수)',strength:'근력 회복도 (개념 지수)'};
+ ctx.clearRect(0,0,w,h);ctx.font='11px sans-serif';ctx.fillStyle='#6b7890';ctx.strokeStyle='#e7edf5';ctx.lineWidth=1;
+ for(let v=0;v<=100;v+=25){let y=p.t+(100-v)*(h-p.t-p.b)/100;ctx.beginPath();ctx.moveTo(p.l,y);ctx.lineTo(w-p.r,y);ctx.stroke();ctx.fillText(v,p.l-27,y+4)}
+ const {days,data}=seriesFor(metric);let x=i=>p.l+i*(w-p.l-p.r)/(days.length-1),y=v=>p.t+(100-v)*(h-p.t-p.b)/100;
+ ctx.strokeStyle=methods.find(m=>m.id===selected).color;ctx.lineWidth=3;ctx.beginPath();data.forEach((v,i)=>i?ctx.lineTo(x(i),y(v)):ctx.moveTo(x(i),y(v)));ctx.stroke();
+ data.forEach((v,i)=>{ctx.beginPath();ctx.arc(x(i),y(v),3.5,0,Math.PI*2);ctx.fillStyle=methods.find(m=>m.id===selected).color;ctx.fill()});
+ ctx.fillStyle='#6b7890';ctx.textAlign='center';days.forEach((d,i)=>{if(i%2===0||i===days.length-1)ctx.fillText(d+'일',x(i),h-9)});
+ ctx.textAlign='left';ctx.fillStyle='#42536b';ctx.font='12px sans-serif';ctx.fillText(labels[metric],p.l,12);
+}
+document.querySelectorAll('.scenario').forEach(b=>b.onclick=()=>{scenario=b.dataset.scenario;document.querySelectorAll('.scenario').forEach(x=>x.classList.toggle('active',x===b));update()});
+$('chartMetric').onchange=e=>{metric=e.target.value;drawChart()};window.addEventListener('resize',drawChart);update();
+</script>
+</body></html>
