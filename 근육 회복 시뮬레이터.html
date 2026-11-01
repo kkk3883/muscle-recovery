@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>근육 회복 시뮬레이터</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#eef4f5;--cd:#fff;--ink:#12262b;--mu:#566c72;--ln:#d5e2e5;--ok:#e8f4f5;--wn:#fdeceb;--pri:#0b7a85;--op:#fff;--dm:#c8473f;--if:#a86f00;--rp:#2a9560;--st:#4a6bd0;--bl:#2459c4}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1a1d;--cd:#15262a;--ink:#e5f0f2;--mu:#98adb3;--ln:#2a444c;--ok:#102f35;--wn:#3a1f1d;--pri:#3cc0cc;--op:#06262a;--dm:#ef7a70;--if:#f0b93a;--rp:#4fcf8e;--st:#8aa5f2;--bl:#8fb0ff}}
+:root[data-theme="dark"]{--bg:#0d1a1d;--cd:#15262a;--ink:#e5f0f2;--mu:#98adb3;--ln:#2a444c;--ok:#102f35;--wn:#3a1f1d;--pri:#3cc0cc;--op:#06262a;--dm:#ef7a70;--if:#f0b93a;--rp:#4fcf8e;--st:#8aa5f2;--bl:#8fb0ff}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14.5px/1.55 'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;padding:14px 18px 6px}
+h1{margin:0;font-size:19px;font-weight:800}
+h1 small,.mu{display:block;font-size:12px;font-weight:400;color:var(--mu)}
+h2{margin:0 0 6px;font-size:16px;font-weight:800}
+h3{margin:12px 0 5px;font-size:13px}
+p{margin:6px 0}
+.sc{display:flex;gap:8px}
+.sc button{text-align:left;padding:8px 14px;border:1.5px solid var(--ln);border-radius:12px;background:var(--cd)}
+.sc small{display:block;font-size:11px;opacity:.85}
+.sc .on,.tb .on{background:var(--pri);border-color:var(--pri);color:var(--op)}
+.warn{margin:6px 18px;padding:8px 12px;border-left:4px solid var(--pri);border-radius:8px;background:var(--ok);font-size:13px}
+.warn.hi{border-color:var(--dm);background:var(--wn)}
+main{display:grid;grid-template-columns:minmax(300px,390px) 1fr;gap:14px;padding:10px 18px 18px;align-items:start}
+.c{display:flex;flex-direction:column;gap:14px;min-width:0}
+section{background:var(--cd);border:1px solid var(--ln);border-radius:14px;padding:14px}
+@media(max-width:860px){main{display:flex;flex-direction:column}.c{display:contents}#mx{order:1}#vz{order:2}#ch{order:3}#ev{order:4}}
+.mh,.mr{display:grid;grid-template-columns:1.3fr repeat(4,1fr);gap:6px;align-items:center}
+.mh{padding:6px 9px 0;font-size:11.5px;color:var(--mu)}
+.mr{width:100%;margin-top:6px;padding:8px 9px;text-align:left;border:1px solid var(--ln);border-radius:10px;background:none}
+.mr.on{border-color:var(--pri);background:var(--ok);box-shadow:inset 4px 0 0 var(--tc)}
+.nm{font-weight:600;font-size:13.5px}
+.bar{display:block;height:7px;border-radius:4px;background:var(--ln);overflow:hidden}
+.bar i{display:block;height:100%;transition:width .2s}
+.mr em{font-style:normal;font-size:11px;color:var(--mu)}
+svg{display:block;width:100%;height:auto}
+.sb,.pb{fill:var(--ok)}.gl{stroke:var(--ln)}.ax,.tx{font-size:11px;fill:var(--mu)}.su{stroke:var(--ink)}
+.ic{fill:#e6a700;stroke:#8a5a00}.sa{fill:#40c07c;stroke:#fff}
+.dr{animation:dr 2.6s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+@keyframes dr{from{transform:translate(-5px,-3px)}to{transform:translate(6px,4px)}}
+.pu{animation:pu 1.6s ease-in-out infinite}@keyframes pu{50%{opacity:.2}}
+.fl{stroke-dasharray:6 6;animation:fl 1s linear infinite}@keyframes fl{to{stroke-dashoffset:-12}}
+.mv{animation:mv 3.2s ease-in-out infinite alternate}@keyframes mv{to{transform:translateX(440px)}}
+@media(prefers-reduced-motion:reduce){.dr,.pu,.fl,.mv{animation:none}}
+.ctl{display:flex;align-items:center;gap:10px;margin:8px 0}
+.ctl button,.tb button,.lg button{padding:5px 12px;border:1px solid var(--ln);border-radius:99px;background:var(--cd)}
+.ctl input{flex:1;accent-color:var(--pri)}
+output{min-width:112px;text-align:right;font-size:12.5px}
+#ph{font-size:13px;margin:4px 0}
+.st{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.st span{flex:1 1 80px;padding:4px 9px;border-left:4px solid var(--c);border-radius:6px;background:var(--ok);font-size:12px;color:var(--mu)}
+.st b{display:block;font-size:19px;color:var(--ink)}
+.kl{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--mu)}
+.kl span:before,.lg button:before{content:"";display:inline-block;width:10px;height:10px;margin-right:5px;border-radius:50%;background:var(--c,var(--tc))}
+.tb,.lg{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.lg .on{border-color:var(--pri);background:var(--ok)}
+.tg{margin-left:6px;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:600;vertical-align:middle}
+.tg.r{background:var(--bl);color:var(--op)}.tg.s{border:1.5px dashed var(--if);color:var(--if)}
+.ch{display:inline-flex;align-items:center;gap:6px;margin:0 6px 6px 0;padding:3px 9px;border-radius:8px;background:var(--ok);font-size:12.5px}
+.ch i{width:9px;height:9px;border-radius:50%;background:var(--c)}
+ul{margin:6px 0;padding-left:18px;font-size:13px}
+footer{padding:0 18px 22px;font-size:12px;color:var(--mu)}
+footer ol{margin:4px 0;padding-left:18px}
+</style>
+</head>
+<body>
+<header>
+<div class="sc" role="group" aria-label="상황 선택"><button data-s="0"><b>상황 1</b><small>근육 파열 · 봉합 수술 후</small></button><button data-s="1"><b>상황 2</b><small>운동 후 지연성 근육통(DOMS)</small></button></div>
+<h1>근육 회복 시뮬레이터<small>의료 교육용 개념 모델 · <span class="tg r">실제 연구</span> 와 <span class="tg s">가상 시뮬레이션</span> 은 구분해 표시합니다</small></h1>
+</header>
+<p id="wn" class="warn" role="note"></p>
+<main>
+<div class="c">
+<section id="mx"><h2>치료법 비교</h2><span class="mu">선택한 시점의 가상 지표(0–100). 통증·염증은 낮을수록, 조직·근력은 높을수록 호전입니다.</span><div class="mh"><span></span><span>통증</span><span>염증</span><span>조직</span><span>근력</span></div><div id="mxb"></div></section>
+<section id="ev"></section>
+</div>
+<div class="c">
+<section id="vz"><h2>근육 내부 변화<span class="tg s">가상 시뮬레이션</span></h2>
+<svg id="sv" viewBox="0 0 640 300" role="img" aria-label="근섬유의 정상, 손상, 염증, 회복 과정 개념도"></svg>
+<div class="ctl"><button id="pl">▶ 재생</button><input id="sl" type="range" min="0" max="1000" aria-label="경과 시간"><output id="tl"></output></div>
+<div id="ph" aria-live="polite"></div><p id="cp" class="mu"></p><div class="st" id="st"></div>
+<div class="kl"><span style="--c:#e27a70">정상 근섬유</span><span style="--c:#c8473f">미세 손상</span><span style="--c:#8c2f39">혈종</span><span style="--c:#e6a700">염증세포</span><span style="--c:#40a064">재생(위성세포·새 섬유)</span><span style="--c:#dec48c">콜라겐 흉터</span></div>
+<span class="mu">※ 개념도입니다. 실제 크기·시간은 사람마다 다르며 DOMS의 정확한 기전은 아직 논쟁 중입니다.</span></section>
+<section id="ch"><h2>시간에 따른 변화<span class="tg s">가상 시뮬레이션</span></h2><div class="tb" id="tb"></div><div id="cs"></div><div class="lg" id="lg"></div><span class="mu">음영은 근거 불확실성 범위이며 실제 환자 데이터가 아닙니다. 통증 곡선은 달라져도 조직 회복 곡선은 거의 같은지 비교해 보세요.</span></section>
+</div>
+</main>
+<footer><b>참고문헌(실제 연구)</b><ol>
+<li>Dupuy O 외. Front Physiol 2018;9:403 — 회복법 메타분석(99개 연구)</li>
+<li>Takagi R 외. J Appl Physiol 2011;110:382–8 — 냉각과 근재생(쥐)</li>
+<li>Shibaguchi T 외. J Physiol Sci 2016;66:345–57 — 냉각 vs 열 스트레스(쥐)</li>
+<li>Johnson MI 외. Cochrane 2015;(6):CD006142 — TENS와 급성통증</li>
+<li>Malanga GA 외. Postgrad Med 2015;127:57–65 — 열·냉 요법 리뷰</li>
+<li>Nampo FK 외. Lasers Med Sci, doi:10.1007/s10103-015-1832-4 — 저출력 광치료와 DOMS</li>
+<li>Leal-Junior ECP 외. Lasers Med Sci 2015;30:925–39 — 광치료와 운동 회복</li>
+<li>Järvinen TAH 외. Am J Sports Med 2005;33:745–64 · Tidball JG. Nat Rev Immunol 2017;17:165–78 — 근손상·재생 생물학(배경)</li></ol>
+<p>근거 확실성 표시는 학습용 요약이며 GRADE 등 공식 평가가 아닙니다. 곡선은 연구 효과 크기를 재현한 것이 아니라 정성적 경향을 단순화한 가상 모델입니다. 이 도구는 의료 교육용이며 진단·치료를 대체하지 않습니다. 수술 후 치료는 반드시 의료진의 지침을 따르세요.</p></footer>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],cl=x=>Math.max(0,Math.min(1,x)),
+A=(e,o)=>{for(const k in o)e.setAttribute(k,o[k])},
+rgb=(a,b,k)=>`rgb(${a.map((x,i)=>Math.round(x+(b[i]-x)*k))})`;
+const Y=[44,84,124,164,204,244],CX=320;
+const MT=[['P','통증','var(--dm)'],['I','염증','var(--if)'],['R','조직 회복','var(--rp)'],['S','근력 회복','var(--st)']];
+const LV=['var(--mu)','var(--if)','var(--rp)'];
+const TH=[
+{n:'온찜질',c:'#e8792b',mech:'열이 조직 온도를 높여 혈관을 넓히고 혈류를 늘리며, 통각 신경 흥분과 근육·결합조직의 뻣뻣함을 낮춥니다.',
+ch:[[1,'제한적'],[0,'불충분'],[1,'동물 연구만'],[0,'근거 없음']],
+ev:['Malanga 2015(리뷰): 열·냉 요법 권고 대부분이 경험에 기반하며 RCT 근거는 제한적입니다. DOMS 통증은 열이 냉보다 유리하다는 보고가 일부 있으나 연구 수·질이 낮습니다.','Shibaguchi 2016(쥐): 열 스트레스가 냉각보다 재생·섬유화 면에서 유리했으나 사람에게 확정할 수 없습니다.'],
+lim:'뻣뻣함·통증 완화는 증상 변화이며, 손상 조직을 직접 복구한다는 인체 근거는 없습니다.',
+nt:['수술 직후에는 부종·출혈이 심해질 수 있어 열 적용 시기·부위를 의료진이 정합니다.','붓기·열감이 있으면 중단하고 화상에 주의하세요.'],
+m:[{p:.05,i:-.1,r:.03,u:.18},{p:.18,i:0,r:.03,u:.15}]},
+{n:'냉찜질',c:'#2f86d6',mech:'냉각이 혈관을 수축시키고 대사와 신경 전도 속도를 낮춰 부종과 통증 신호를 줄입니다.',
+ch:[[2,'일부 근거'],[2,'지표 감소 보고'],[1,'동물서 지연 가능성'],[0,'불충분']],
+ev:['Dupuy 2018(메타분석, 99개 연구): 냉 노출이 DOMS와 염증 지표(CK·IL-6·CRP)를 줄였고, 염증 지표 감소는 마사지와 냉 노출이 가장 컸습니다. 통증은 주관 지표라 위약 효과 가능성이 있습니다.','Takagi 2011(쥐 압궤 손상): 20분 냉각이 재생을 약 1일 늦추고 28일째 섬유 단면적 감소·콜라겐 증가를 보였습니다. 사람에서는 확인되지 않았습니다.'],
+lim:'붓기·통증 완화와 조직 재생은 별개입니다. 이른 냉각이 재생에 불리할 가능성은 동물에서만 보고됐습니다.',
+nt:['수술 후 냉각은 통증·부종 관리에 흔히 쓰이나 근 봉합 수술에 특화된 고품질 RCT는 부족하므로 병원 프로토콜을 따르세요.','단기 통증 완화용으로 쓸 수 있으나 장기 이득은 불확실합니다.'],
+m:[{p:.18,i:.1,r:-.03,u:.16},{p:.2,i:.12,r:-.03,u:.12}]},
+{n:'적외선 치료',c:'#c0398a',mech:'적외선이 조직에 흡수되어 국소 온열과 혈류 증가를 일으킵니다. 저출력 레이저·LED 광치료는 세포 수준 작용 가설이 있는 별개 기술입니다.',
+ch:[[0,'불충분'],[0,'불충분'],[0,'근거 없음(가설)'],[0,'불충분']],
+ev:['Nampo 외(저출력 광치료·DOMS 메타분석): 근손상·운동 통증에 뚜렷한 효과가 없을 수 있다고 결론했고 연구 수가 적습니다.','Leal-Junior 2015(메타분석): 주로 운동 전 적용 시 수행·회복 개선 경향이 있으나 이질성이 큽니다. 열램프형 적외선의 직접 근거는 제한적입니다.'],
+lim:'장비·파장·용량 편차가 커 일반화가 어렵고, 열을 쓰면 온찜질과 같은 주의가 필요합니다.',
+nt:['수술 부위에 열·빛을 쬐어도 되는지는 의료진이 판단합니다.','DOMS 회복 가속의 근거는 아직 약합니다.'],
+m:[{p:.05,i:0,r:0,u:.2},{p:.08,i:0,r:0,u:.18}]},
+{n:'TENS',c:'#7a55d4',mech:'피부 전극의 저전압 펄스가 굵은 감각신경(Aβ)을 자극해 통증 신호 전달을 억제합니다(관문 조절).',
+ch:[[1,'잠정적'],[0,'근거 없음'],[0,'근거 없음'],[0,'근거 없음']],
+ev:['Johnson 2015(Cochrane, 급성통증): 위약 대비 통증 감소의 잠정적 근거가 있으나 근거 질은 중등도~낮음입니다.','Dupuy 2018: 운동 후 회복용 전기자극은 DOMS 개선이 확인되지 않았습니다. 조직 재생 촉진 근거는 없습니다.'],
+lim:'통증 ‘신호’만 줄일 뿐 조직을 복구하지 않으며, 통증이 가려져 무리할 위험이 있습니다.',
+nt:['절개 부위와 전극 위치, 금속 삽입물·심박동기 여부는 의료진이 확인해야 합니다.','DOMS에서는 효과가 일정하지 않습니다.'],
+m:[{p:.15,i:0,r:0,u:.16},{p:.1,i:0,r:0,u:.15}]},
+{n:'마사지 치료',c:'#1f9d78',mech:'기계적 압박이 통증 억제(관문 조절), 근긴장 감소, 국소 혈류·림프 순환 변화를 일으킵니다. 염증 지표 감소 기전은 논쟁 중입니다.',
+ch:[[2,'상대적으로 많음'],[2,'지표 감소 보고'],[0,'불충분'],[0,'일관되지 않음']],
+ev:['Dupuy 2018: 마사지가 DOMS·피로 감소에 가장 효과적이었고 CK·IL-6 감소도 보고됐습니다. 연구 대부분 소규모이며 맹검이 어렵습니다.','근력 회복 가속과 조직 재생 촉진의 인체 근거는 부족합니다.'],
+lim:'증상 완화 중심이며 조직 재생을 직접 입증한 연구는 부족합니다.',
+nt:['봉합 부위 직접 마사지는 의료진 지시 없이 하지 않습니다. 시뮬레이션은 효과를 0으로 둡니다.','통증이 심하거나 부은 부위는 강한 압박을 피하세요.'],
+m:[{p:0,i:0,r:0,u:.2},{p:.28,i:.12,r:0,u:.1}]}];
+const SC=[
+{T:84,R0:0,DUR:14,u:t=>`${Math.round(t)}일 (${(t/7).toFixed(1)}주)`,
+tk:[[0,'0'],[14,'2주'],[28,'4주'],[42,'6주'],[56,'8주'],[70,'10주'],[84,'12주']],
+b:t=>({P:.85*Math.exp(-t/14)+.05,I:.9*Math.exp(-t/7),R:1-Math.exp(-t/45),S:.9*(1-Math.exp(-t/55))}),
+w:'수술 후 재활은 수술 방식·봉합 상태·시기에 따라 다릅니다. 이 화면의 어떤 치료도 임의로 적용하지 말고 반드시 집도의·물리치료사의 지침을 따르세요.',
+cp:'수술 상황: 근섬유가 끊겨 간극이 생기고, 혈종 → 콜라겐 흉터 → 부분 재생을 거쳐 수개월에 걸쳐 회복합니다.',
+ph:[[0,7,'염증기(0–1주)','출혈·혈종을 호중구·대식세포가 정리하고, 봉합사가 끊어진 끝을 붙잡습니다.'],[7,28,'증식·재생기(1–4주)','섬유아세포가 콜라겐 다리를 만들고 위성세포가 새 근섬유를 만듭니다.'],[28,84,'리모델링기(4주~)','콜라겐이 재배열되며 흉터가 남고, 근력은 이후에도 수개월 천천히 회복합니다.']]},
+{T:7,R0:.3,DUR:10,u:t=>`${Math.round(t*24)}시간 (${t.toFixed(1)}일)`,
+tk:[0,1,2,3,4,5,6,7].map(d=>[d,d+(d?'일':'')]),
+b:t=>{const g=(a,k)=>a*t/k*Math.exp(1-t/k);return{P:cl(g(.75,1.8)+.03),I:cl(g(.6,1.3)),R:1-.7*Math.exp(-t/2.8),S:1-.35*Math.exp(-t/3.5)}},
+w:'운동 후 근육통은 대개 며칠 내 호전됩니다. 극심한 통증, 심한 붓기, 콜라색 소변이 있으면 즉시 진료를 받으세요.',
+cp:'근육통 상황: 근섬유는 이어진 채 미세 손상만 생기고, 염증 후 며칠 내 스스로 회복하며 대부분 흉터가 남지 않습니다.',
+ph:[[0,1,'미세 손상 직후(0–24시간)','과도한 신장성 수축으로 근섬유 내부 구조가 흐트러집니다. 통증은 아직 적습니다.'],[1,3,'통증·염증 정점(1–3일)','염증세포가 모이고 통증이 가장 큽니다. 섬유는 끊어지지 않았습니다.'],[3,7,'자가 회복(3–7일)','위성세포와 단백질 합성으로 구조가 복구되고 통증이 가라앉습니다.']]}];
+const FX=[
+`<rect x="250" y="4" width="140" height="22" rx="8" fill="#e8792b"/><path class="pu" d="M272 40q7-6 0-13M320 40q7-6 0-13M368 40q7-6 0-13" fill="none" stroke="#e8792b" stroke-width="2.4"/>`,
+`<rect x="250" y="4" width="140" height="22" rx="8" fill="#2f86d6"/><path class="fl" d="M272 28v13M320 28v13M368 28v13" fill="none" stroke="#2f86d6" stroke-width="2.4"/>`,
+`<path d="M290 3h60l-12 22h-36z" fill="#c0398a"/><path class="fl" d="M320 27L240 43M320 27L280 43M320 27V43M320 27L360 43M320 27L400 43" fill="none" stroke="#c0398a" stroke-width="2"/>`,
+`<rect x="110" y="3" width="70" height="14" rx="5" fill="#7a55d4"/><rect x="460" y="3" width="70" height="14" rx="5" fill="#7a55d4"/><path class="fl" d="M180 10h22l8-7 12 14 12-14 12 14 8-7h206" fill="none" stroke="#7a55d4" stroke-width="2"/><path class="pu" d="M145 19v22M495 19v22" fill="none" stroke="#7a55d4" stroke-width="2.4"/>`,
+`<g class="mv"><ellipse cx="90" cy="13" rx="36" ry="12" fill="#1f9d78"/><path class="pu" d="M80 27v14M100 27v14" fill="none" stroke="#1f9d78" stroke-width="2.6"/></g>`];
+const VS=[[9,'#d4554a','혈관 확장 · 혈류 증가'],[2,'#5c8fd6','혈관 수축 · 혈류 감소'],[6,'#d4554a','온열 · 혈류 증가'],[4,'#d4554a','감각신경 자극 (혈류 변화 작음)'],[7,'#d4554a','압박 · 국소 순환 변화'],[4,'#d4554a','자연 경과(무처치)']];
+const sim=(s,i,t)=>{const m=i<0?{p:0,i:0,r:0}:TH[i].m[s],c=SC[s].b,a=c(t*(1+3*m.r)),y=c(t);return{P:cl(y.P*(1-m.p)),I:cl(y.I*(1-m.i)),R:cl(a.R),S:cl(a.S)}};
+let si=0,ti=1,mi=0,q=.2,pg=0,last=0;
+const sv=$('#sv'),sl=$('#sl');
+function bld(){
+let h=`<defs><pattern id="stp" width="9" height="26" patternUnits="userSpaceOnUse"><rect width="2" height="26" fill="#fff" opacity=".3"/></pattern></defs><rect class="sb" width="640" height="300" rx="12"/><rect id="tn" width="640" height="300" rx="12" fill="#e6a700" opacity="0"/>`;
+Y.forEach(y=>h+=`<rect class="fb" y="${y}" height="26" rx="13"/><rect class="lf" y="${y}" height="26" rx="13"/><rect class="rt" y="${y}" height="26" rx="13"/><rect x="16" y="${y}" width="608" height="26" rx="13" fill="url(#stp)"/>`);
+h+=`<rect id="gp" y="38" height="238"/>`;
+Y.forEach(y=>h+=`<rect class="br" y="${y}" height="26" fill="#40a064"/>`);
+h+=`<g id="fx"></g>`;
+for(let i=0;i<3;i++)h+=`<path class="su" fill="none" stroke-width="1.8" stroke-linecap="round"/>`;
+for(let i=0;i<16;i++)h+=`<path class="mk" d="M0-9L-3-2L3 1L-1 9" fill="none" stroke="#c8473f" stroke-width="2.4" stroke-linecap="round"/>`;
+for(let i=0;i<16;i++)h+=`<g><circle class="ic dr" r="5" style="animation-delay:-${(i*.37%2.6).toFixed(2)}s"/></g>`;
+for(let i=0;i<10;i++)h+=`<g><circle class="sa dr" r="3.8" style="animation-delay:-${(i*.53%2.6).toFixed(2)}s"/></g>`;
+sv.innerHTML=h}
+function fxset(){const v=VS[ti<0?5:ti];$('#fx').innerHTML=(FX[ti]||'')+`<path d="M16 290C160 282 480 298 624 290" fill="none" stroke="${v[1]}" stroke-width="${v[0]}" stroke-linecap="round" opacity=".75"/><text class="tx" x="624" y="281" text-anchor="end">${v[2]}</text>`}
+const f=x=>(x>0?'−':x<0?'+':'±')+Math.abs(Math.round(x*100))+'%',g=x=>(x>0?'+':x<0?'−':'±')+Math.abs(Math.round(x*300))+'%';
+function evr(){const h=TH[ti],e=$('#ev');
+if(!h){e.innerHTML='<h2>무처치(기준선)</h2><p>치료 없이 자연 경과만 본 가상 곡선입니다. 각 치료의 차이는 이 기준선과 비교해 해석하세요.</p>';return}
+const m=h.m[si],c=(x,n)=>`<span class="ch" style="--c:${LV[x[0]]}"><i></i>${n}: ${x[1]}</span>`;
+e.innerHTML=`<h2>${h.n}의 작용 원리와 근거</h2><p>${h.mech}</p><h3>효과별 근거 확실성<span class="tg r">실제 연구</span></h3><span class="mu">증상(통증·염증 지표)과 조직·기능(재생·근력)을 구분해 보세요. 회색 불충분 · 주황 제한적/동물 · 초록 일부 근거</span><div>${c(h.ch[0],'통증')}${c(h.ch[1],'염증 지표')}</div><div>${c(h.ch[2],'조직 재생')}${c(h.ch[3],'근력')}</div><ul>${h.ev.map(x=>`<li>${x}</li>`).join('')}</ul><h3>이 화면의 가정값<span class="tg s">가상 시뮬레이션</span></h3><p class="mu">통증 ${f(m.p)} · 염증 ${f(m.i)} · 회복 속도 ${g(m.r)} · 불확실 범위 ±${Math.round(m.u*100)}p. 연구가 측정한 효과 크기가 아니라 근거 강도를 반영한 교육용 값입니다.</p><h3>한계와 주의</h3><p>${h.lim}</p><p><b>${h.nt[si]}</b></p>`}
+function chart(t){
+const s=SC[si],W=640,HT=250,L=34,R=10,T0=10,B=26,pw=W-L-R,hh=HT-T0-B,N=56,k=MT[mi][0],X=u=>L+u/s.T*pw,Yy=v=>T0+(1-v)*hh;
+let h=s.ph.map((p,j)=>`<rect class="pb" x="${X(p[0])}" y="${T0}" width="${X(p[1])-X(p[0])}" height="${hh}" opacity="${j%2?.4:.9}"/>`).join('');
+for(let i=0;i<=4;i++){const y=Yy(i/4);h+=`<line class="gl" x1="${L}" x2="${W-R}" y1="${y}" y2="${y}"/><text class="ax" x="${L-5}" y="${y+4}" text-anchor="end">${i*25}</text>`}
+s.tk.forEach(([u,l])=>h+=`<text class="ax" x="${X(u)}" y="${HT-8}" text-anchor="middle">${l}</text>`);
+const pt=(i,fn=v=>v)=>Array.from({length:N+1},(_,j)=>{const u=j/N*s.T;return X(u).toFixed(1)+','+Yy(fn(sim(si,i,u)[k])).toFixed(1)});
+const col=i=>i<0?'#8a9ba0':TH[i].c,ln=(i,w,o)=>`<polyline points="${pt(i).join(' ')}" fill="none" stroke="${col(i)}" stroke-width="${w}" opacity="${o}"${i<0?' stroke-dasharray="5 4"':''}/>`;
+[-1,0,1,2,3,4].filter(i=>i!==ti).forEach(i=>h+=ln(i,1.8,.55));
+if(ti>=0){const u=TH[ti].m[si].u;h+=`<polygon points="${pt(ti,v=>cl(v+u)).join(' ')} ${pt(ti,v=>cl(v-u)).reverse().join(' ')}" fill="${col(ti)}" opacity=".18"/>`}
+h+=ln(ti,3.6,1);
+const cx=X(t);h+=`<line x1="${cx}" x2="${cx}" y1="${T0}" y2="${T0+hh}" stroke="#8a9ba0" stroke-dasharray="3 3"/>`;
+[...new Set([ti,-1])].forEach(i=>h+=`<circle cx="${cx}" cy="${Yy(sim(si,i,t)[k])}" r="4.5" fill="${col(i)}" stroke="#fff" stroke-width="1.5"/>`);
+$('#cs').innerHTML=`<svg viewBox="0 0 ${W} ${HT}" role="img" aria-label="시간에 따른 ${MT[mi][1]} 변화 그래프(가상 시뮬레이션)">${h}</svg>`}
+function draw(){
+const s=SC[si],t=q*s.T,v=sim(si,ti,t),D=Math.max(0,(1-v.R)/(1-s.R0)),gp=si?0:4+38*Math.pow(D,1.1),fc=rgb([226,122,112],[150,70,92],(si?.3:.25)*D);
+A($('#tn'),{opacity:v.I*.22});
+$$('.fb').forEach(e=>A(e,{x:16,width:608,fill:fc,display:si?'inline':'none'}));
+$$('.lf').forEach(e=>A(e,{x:16,width:CX-gp/2-3,fill:fc,display:si?'none':'inline'}));
+$$('.rt').forEach(e=>A(e,{x:CX+gp/2-13,width:624-CX-gp/2+13,fill:fc,display:si?'none':'inline'}));
+$$('.br').forEach(e=>A(e,{x:CX-gp/2,width:gp,opacity:si?0:Math.pow(v.R,2)*.9}));
+A($('#gp'),{x:CX-gp/2,width:gp,fill:rgb([140,47,57],[222,196,140],1-Math.min(1,D*1.1)),display:si?'none':'inline'});
+$$('.su').forEach((p,j)=>{const y=82+j*80;A(p,{d:`M${CX-gp/2-7} ${y-9}L${CX+gp/2+7} ${y+9}M${CX-gp/2-7} ${y+9}L${CX+gp/2+7} ${y-9}`,opacity:si?0:1-.65*v.R})});
+$$('.mk').forEach((p,i)=>A(p,{transform:`translate(${40+i*83%560} ${Y[i%6]+13})`,opacity:si?Math.min(1,D)*.95:0}));
+const nI=Math.round(16*cl(v.I/.9)),nS=Math.round(10*Math.sin(Math.PI*cl((v.R-s.R0)/(1-s.R0))));
+$$('.ic').forEach((c,i)=>{A(c.parentNode,{transform:si?`translate(${40+i*89%560} ${34+i*47%236})`:`translate(${CX+i*53%170-85} ${40+i*71%232})`});c.style.display=i<nI?'':'none'});
+$$('.sa').forEach((c,i)=>{A(c.parentNode,{transform:si?`translate(${60+i*131%540} ${50+i*61%210})`:`translate(${CX+i*47%150-75+(i%2?-20:20)} ${48+i*83%210})`});c.style.display=i<nS?'':'none'});
+$('#st').innerHTML=MT.map(([k,n,c])=>`<span style="--c:${c}"><b>${Math.round(v[k]*100)}</b>${n}</span>`).join('');
+const p=s.ph.find(x=>t<x[1])||s.ph[2];
+$('#ph').innerHTML=`<b>${p[2]}</b> ${p[3]}`;
+$('#tl').textContent=s.u(t);sl.value=q*1000;
+$$('.mr').forEach(r=>{const w=sim(si,+r.dataset.i,t);r.querySelectorAll('.bi').forEach((b,j)=>b.style.width=w[MT[j][0]]*100+'%');r.querySelectorAll('.bn').forEach((n,j)=>n.textContent=Math.round(w[MT[j][0]]*100))});
+chart(t)}
+function sel(){
+$$('[data-s]').forEach(b=>{const o=+b.dataset.s===si;b.classList.toggle('on',o);b.setAttribute('aria-pressed',o)});
+$$('[data-i]').forEach(b=>{const o=+b.dataset.i===ti;b.classList.toggle('on',o);b.setAttribute('aria-pressed',o)});
+$$('[data-m]').forEach(b=>b.classList.toggle('on',+b.dataset.m===mi))}
+function halt(){pg=0;$('#pl').textContent='▶ 재생'}
+function go(ts){if(!pg)return;q=Math.min(1,q+Math.max(0,ts-last)/1000/SC[si].DUR);last=ts;draw();q>=1?halt():requestAnimationFrame(go)}
+function toggle(){if(pg){halt();return}if(q>=1)q=0;pg=1;$('#pl').textContent='❚❚ 일시정지';last=performance.now();requestAnimationFrame(go)}
+function setS(n){si=n;q=.2;halt();const w=$('#wn');w.className='warn'+(si?'':' hi');w.textContent=SC[si].w;$('#cp').textContent=SC[si].cp;sel();fxset();evr();draw()}
+function setT(i){ti=i;sel();fxset();evr();draw()}
+bld();
+$('#mxb').innerHTML=[...TH.map((h,i)=>[h.n,h.c,i]),['무처치(기준선)','#8a9ba0',-1]].map(([n,c,i])=>`<button class="mr" data-i="${i}" style="--tc:${c}"><span class="nm">${n}</span>${MT.map(m=>`<span><span class="bar"><i class="bi" style="background:${m[2]}"></i></span><em class="bn"></em></span>`).join('')}</button>`).join('');
+$('#tb').innerHTML=MT.map((m,i)=>`<button data-m="${i}">${m[1]}</button>`).join('');
+$('#lg').innerHTML=[...TH,{n:'무처치',c:'#8a9ba0'}].map((h,i)=>`<button data-i="${i<5?i:-1}" style="--tc:${h.c}">${h.n}</button>`).join('');
+sl.oninput=()=>{q=sl.value/1000;halt();draw()};
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+if(d.s!==undefined)setS(+d.s);else if(d.i!==undefined)setT(+d.i);else if(d.m!==undefined){mi=+d.m;sel();draw()}else if(b.id==='pl')toggle()});
+setS(0);
+</script>
+</body>
+</html>
